@@ -1,5 +1,6 @@
 % this function finds the RHS of Au=b for problem 2
-
+% uses properties of the convolution of the dirac delta and the basis vectors
+% for the subspace we are searching for a solution
 function [b] = assemble_rhs_dirac(gp, N)
   b = zeros(N, 1);
   for j=1:N

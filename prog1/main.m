@@ -21,6 +21,7 @@ gp = assemble_grid(N, problemtype);
 
 u_h_1 = zeros(1,length(gp));
 u_h_2 = zeros(1,length(gp));
+
 [A, b] = assemble_linear_system(N, gp);
 b2 = assemble_rhs_dirac(gp, N);
 
