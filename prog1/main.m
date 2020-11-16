@@ -9,23 +9,31 @@
 EQUIDISTANT_GRID = 0;
 RANDOM_GRID = 1;
 
-problemtype = 1;
+problemtype = 0;
 
 analytical_1 = @(x) -0.5*(x-0.5).^2 + 0.125;
 
 %Set number of hat functions to use
-N = 15;
+N = 100;
 
 gp = assemble_grid(N, problemtype);
 
 
 u_h_1 = zeros(1,length(gp));
-[A, f] = assemble_linear_system(N, gp);
-u_h_1(2:length(gp)-1) = A\f;
+u_h_2 = zeros(1,length(gp));
+[A, b] = assemble_linear_system(N, gp);
+b2 = assemble_rhs_dirac(gp, N);
+
+u_h_1(2:length(gp)-1) = A\b;
+u_h_2(2:length(gp)-1) = A\b2;
 
 figure(1)
-plot(gp,u_h_1)
+fplot(analytical_1, [0 1], '-r')
 hold on
-%fplot(analytical_1, [0 1], '-r')
+plot(gp,u_h_1)
 hold off
+grid
+
+figure(2)
+plot(gp,u_h_2)
 grid
