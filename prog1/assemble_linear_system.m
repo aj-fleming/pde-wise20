@@ -36,4 +36,4 @@ function [A, b] = assemble_linear_system(N, grid)
     %previously known computation of F(phi_i)
     b(i,1) = 0.5*((grid(i+2)-grid(i+1))+(grid(i+1)-grid(i)));
   end
-endfunction
+end

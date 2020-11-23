@@ -17,4 +17,4 @@ function [gridpoints] = assemble_grid(N, type)
     gridpoints(N+2) = 1;
     gridpoints(2:N+1) = sort(rand(1, N));
   end
-endfunction
+end
