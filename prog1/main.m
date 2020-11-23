@@ -11,7 +11,7 @@ RANDOM_GRID = 1;
 
 problemtype = 0;
 
-analytical_1 = @(x) -0.5 .*(x-0.5).^2 .+ 0.125;
+analytical_1 = @(x) -0.5 .*(x-0.5).^2 + 0.125;
 analytical_2 = @(x) (x < 0.5) .* (x) + (x >= 0.5) .* (1-x);
 
 %Set number of hat functions to use
