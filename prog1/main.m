@@ -16,7 +16,7 @@ analytical_2 = @(x) (x < 0.5) .* (x) + (x >= 0.5) .* (1-x);
 
 %Set number of hat functions to use
 N = 4;
-ntries = 200;
+ntries = 100;
 
 width = 0*(1:ntries);
 err1s = 0*(1:ntries);
@@ -40,5 +40,21 @@ for i=1:ntries
 end
 
 figure(1)
-plot(widths, err1s);
+plot(gp, u_h_1);
+title("Numerical Solution to (1)");
+grid
+figure(2)
+plot(gp, u_h_2);
+title("Numerical Solution to (2)");
+figure(3)
+loglog(widths, err1s);
+title("Error plot for Solution to (1)");
+xlabel("grid width");
+ylabel("error in the L2 norm")
+grid
+figure(4)
+loglog(widths, err2s);
+title("Error plot for Solution to (2)");
+xlabel("grid width");
+ylabel("error in the L2 norm")
 grid
