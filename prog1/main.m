@@ -16,7 +16,7 @@ N = 4;
 %Number of iterations to loop through
 ntries = 100;
 % initialize empty widts and error values in for L2-norm
-width = 0*(1:ntries);
+widths = 0*(1:ntries);
 err1s = 0*(1:ntries);
 err2s = 0*(1:ntries);
 for i=1:ntries
