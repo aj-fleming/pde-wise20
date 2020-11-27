@@ -16,9 +16,9 @@ analytical_2 = @(x) (x < 0.5) .* (x) + (x >= 0.5) .* (1-x);
 
 %Set number of hat functions to use
 N = 4;
-ntries = 100;
+ntries = 4;
 
-width = 0*(1:ntries);
+widths = 0*(1:ntries);
 err1s = 0*(1:ntries);
 err2s = 0*(1:ntries);
 for i=1:ntries
@@ -36,7 +36,7 @@ for i=1:ntries
   err1s(i) = compute_error(analytical_1, u_h_1, gp);
   err2s(i) = compute_error(analytical_2, u_h_2, gp);
   widths(i) = 1/(N+1);
-  N = N + 4;
+  N = N + 2;
 end
 
 figure(1)
