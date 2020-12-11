@@ -8,16 +8,71 @@ import numpy as np
 
 NODES_PER_ELEMENT_TYPE = [2,3,4,4,8,6,5,3,6,9,10,27,18,14,1,8,20,15,13]
 
-def scan_for_keyword(file, keyword):
-    tline = file.readline().lower().strip()
-    while tline != keyword.lower().strip():
-        if not tline:
-            return False
-        tline = file.readline().lower().strip()
-    return True
+def lineIntegrationRule():
+    qp = np.zeros((3,1))
+    qp[0] = -np.sqrt(3/5);
+    qp[2] = np.sqrt(3/5);
+    
+    qw = np.zeros((3,1))
+    qw[0] = 5/9
+    qw[1] = 8/9
+    qw[2] = 5/9
+    
+    return qp, qw, 3
+
+def triangleIntegrationRule():
+    """
+    Returns
+    -------
+    quadPoints : 7x2 ndarray of floats
+        quadrature points for the reference triangle stored as row vectors
+    quadWeights : 7x1 array of floats
+        weights for the given quadrature points
+    int
+        7
+    """
+    quadPoints = np.zeros((7,2))
+    # points in the xi direction
+    quadPoints[0][0] = 1/3;
+    quadPoints[1][0] = (6 + np.sqrt(15))/21;
+    quadPoints[2][0] = (9 - 2*np.sqrt(15))/21;
+    quadPoints[3][0] = (6 + np.sqrt(15))/21;
+    quadPoints[4][0] = (6 - np.sqrt(15))/21;
+    quadPoints[5][0] = (9 + 2*np.sqrt(15))/21;
+    quadPoints[6][0] = (6 - np.sqrt(15))/21;
+    # eta-values
+    quadPoints[0][1] = 1/3;
+    quadPoints[1][1] = (6 + np.sqrt(15))/21;
+    quadPoints[2][1] = (6 + np.sqrt(15))/21;
+    quadPoints[3][1] = (9 - 2*np.sqrt(15))/21;
+    quadPoints[4][1] = (6 - np.sqrt(15))/21;
+    quadPoints[5][1] = (6 - np.sqrt(15))/21;
+    quadPoints[6][1] = (9 + 2*np.sqrt(15))/21;
+    # weights
+    quadWeights = np.zeros((7,1));
+    quadWeights[0] = 9/80;
+    quadWeights[1:4] = (155 + np.sqrt(15))/2400;
+    quadWeights[4:7] = (155 - np.sqrt(15))/2400;
+    
+    return quadPoints, quadWeights, 7
+
 
 class MeshOperations:
     def __init__(self, meshfile):
+        """
+        Loads the mesh from disk. Contains many useful methods for working with
+        2-d triangular meshes.
+
+        Parameters
+        ----------
+        meshfile : file path
+            location of an ASCII gmesh2 file.
+
+        Returns
+        -------
+        None.
+
+        """
         self.mesh = MeshGrid(meshfile)          
     
     def reset(self):
@@ -32,6 +87,20 @@ class MeshOperations:
         return "\n".join([bbinf, nodeinf, lineinf, triinf])
     
     def getLineTag(self, i):
+        """
+        Parameters
+        ----------
+        i : integer
+            the edge element whose tag we want. indexing starts at 0!
+
+        Returns
+        -------
+        integer
+            1 for inner edges
+            2 for outer edge with a dirichlet boundary value
+            3 for an outer edge with a von Neumann boundary value
+
+        """
         return self.mesh.lines[i][2]
     
     def getTriangleTag(self, i):
@@ -66,7 +135,7 @@ class MeshOperations:
         endpoints = self.mesh.lines[lineIdx][0:2]
         points = self.mesh.node_positions[endpoints][0:2]
         
-        J = np.zeros(2,1)
+        J = np.zeros((1,2))
         J[0] = 0.5 * (points[1][0] - points[0][0])
         J[1] = 0.5 * (points[1][1] - points[0][1])
         return J
@@ -83,20 +152,45 @@ class MeshOperations:
         
         return J
     
+    def calcTriangleInverseJacobian(self, triIdx):
+        return np.linalg.inv(self.calcTriangleJacobian(triIdx))
+    
+    def calcLineJacobianDeterminant(self, lineIdx):
+        J = self.calcLineJacobian(lineIdx)
+        return np.sqrt(np.sum(np.power(J,2)))
+    
+    def calcTriangleJacobianDeterminant(self, triIdx):
+        return np.abs(np.linalg.det(self.calcTriangleJacobian(triIdx)))
+    
+    def calcTriangularIntegrationPoints(self, triIdx, int_point):
+        J = self.calcTriangleJacobian(triIdx)
+        p1n = self.mesh.tris[triIdx][0]
+        refPos = self.mesh.node_positions[p1n][0:2]
+        
+        tv = np.dot(J.transpose(), int_point)
+        return np.add(refPos, tv)
     
     
 class MeshGrid:
+    """
+    Describes a GMesh mesh. This is a low-level structure to keep track of small details about the mesh.
+    Maintins element tag and connectivity information.
+    """
     def __init__(self, file):
         self.filename = file
         self.bounding_box = np.zeros((2,3))
-        self.meshformat = ""
-        self.num_nodes = 0
-        self.node_positions = None
-        self.num_elements = 0
-        self.element_ids = 0
         self.initialized = self.reload()
 
     def reload(self):
+        """
+        Load the mesh file from disk (perhaps again if it has been modified in the program)
+
+        Returns
+        -------
+        bool
+            True if the v2 ASCII mesh file was successfully loaded.
+
+        """
         with open(self.filename,'r') as meshfile:
             # scan file until we reach a mesh format declarator
             if not scan_for_keyword(meshfile, "$meshformat"):
@@ -226,8 +320,10 @@ class MeshGrid:
             self.tris6[self.num_tris6][6] = self.element_infos[i][3]
             self.num_tris6 = self.num_tris6 + 1    
 
-def test():
-    return MeshOperations('mesh/unitSquare1.msh')
-x = test()
-print(x)
-print(x.calcTriangleJacobian(0))
+def scan_for_keyword(file, keyword):
+    tline = file.readline().lower().strip()
+    while tline != keyword.lower().strip():
+        if not tline:
+            return False
+        tline = file.readline().lower().strip()
+    return True

@@ -1,3 +1,4 @@
 */.spyder
 */.spyproject
 */.pylint.d
+*/__pycache__
