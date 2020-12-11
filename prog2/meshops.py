@@ -5,6 +5,8 @@ Created on Thu Dec 10 14:36:02 2020
 @author: AJ Fleming
 """
 import numpy as np
+from matplotlib.tri import Triangulation
+
 
 NODES_PER_ELEMENT_TYPE = [2,3,4,4,8,6,5,3,6,9,10,27,18,14,1,8,20,15,13]
 
@@ -29,7 +31,7 @@ def triangleIntegrationRule():
     quadWeights : 7x1 array of floats
         weights for the given quadrature points
     int
-        7
+        number of quadrature points used
     """
     quadPoints = np.zeros((7,2))
     # points in the xi direction
@@ -58,11 +60,10 @@ def triangleIntegrationRule():
 
 
 class MeshOperations:
+    """Contains many useful methods for dealing with 2-d triangular meshes"""
     def __init__(self, meshfile):
         """
-        Loads the mesh from disk. Contains many useful methods for working with
-        2-d triangular meshes.
-
+        Loads the mesh from disk. 
         Parameters
         ----------
         meshfile : file path
@@ -104,16 +105,32 @@ class MeshOperations:
         return self.mesh.lines[i][2]
     
     def getTriangleTag(self, i):
+        """
+        Returns the tag of triangle i. i is zero-indexed.
+
+        Parameters
+        ----------
+        i : integer
+            the triangle whose tag we desire.
+
+        Returns
+        -------
+        integer
+            1 for inner surface
+            2 for outer surface with a dirichlet boundary value
+            3 for an outer surface with a von Neumann boundary value
+
+        """
         return self.mesh.tris[i][3]
     
     def getNodeCount(self):
         return self.mesh.num_nodes
     
     def getListOfTriangles(self):
-        return self.mesh.tris[0:self.mesh.num_tris][0:2]
+        return self.mesh.tris[:,0:3]
     
     def getListOfNodePositions(self):
-        return self.mesh.node_positions[:][0:2]
+        return self.mesh.node_positions[:,0:2]
     
     def getTriangleCount(self):
         return self.mesh.num_tris
@@ -160,9 +177,9 @@ class MeshOperations:
         return np.sqrt(np.sum(np.power(J,2)))
     
     def calcTriangleJacobianDeterminant(self, triIdx):
-        return np.abs(np.linalg.det(self.calcTriangleJacobian(triIdx)))
+        return np.linalg.det(self.calcTriangleJacobian(triIdx))
     
-    def calcTriangularIntegrationPoints(self, triIdx, int_point):
+    def calcTriangularIntegrationPoint(self, triIdx, int_point):
         J = self.calcTriangleJacobian(triIdx)
         p1n = self.mesh.tris[triIdx][0]
         refPos = self.mesh.node_positions[p1n][0:2]
