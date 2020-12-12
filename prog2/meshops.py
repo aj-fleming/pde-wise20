@@ -124,31 +124,111 @@ class MeshOperations:
         return self.mesh.tris[i][3]
     
     def getNodeCount(self):
+        """
+        Returns
+        -------
+        int
+            number of nodes in this mesh.
+
+        """
         return self.mesh.num_nodes
     
     def getListOfTriangles(self):
+        """
+        Returns
+        -------
+        numpy ndarray
+            an nx3 array of the n triangles in this mesh
+            each row vector is the node numbers of the nth triangle
+
+        """
         return self.mesh.tris[:,0:3]
     
     def getListOfNodePositions(self):
+        """
+        Returns
+        -------
+        numpy ndarray
+            an nx2 array of row vectors for the position of the n nodes
+            in this mesh.
+
+        """
         return self.mesh.node_positions[:,0:2]
     
     def getTriangleCount(self):
+        """
+        Returns
+        -------
+        integer
+            number of triangles in this mesh.
+
+        """
         return self.mesh.num_tris
     
     def getLineCount(self):
+        """
+        Returns
+        -------
+        integer
+            number of lines in this mesh.
+
+        """
         return self.mesh.num_lines
     
     def getLineNodes(self, lineIdx, order):
+        """
+        Parameters
+        ----------
+        lineIdx : int
+            the line whose nodes we wish to know.
+        order : int
+            the order of the line element. n-order nodes support all lower orders
+            currently can only read orders 1 and 2 from file
+
+        Returns
+        -------
+        numpy.ndarray
+            list of node numbers for the line.
+
+        """
         if order == 1:
-            return self.mesh.lines[lineIdx][0:2]
-        return self.mesh.lines3[lineIdx][0:3]
+            return self.mesh.lines[lineIdx, 0:2]
+        return self.mesh.lines3[lineIdx, 0:3]
     
     def getTriangleNodes(self, triIdx, order):
+        """
+        Parameters
+        ----------
+        triIdx : int
+            the triangle whose nodes we wish to know.
+        order : int
+            the order of the triangle element. n-order nodes support all lower orders
+            currently can only read orders 1 and 2 from file
+
+        Returns
+        -------
+        numpy.ndarray
+            list of node numbers for the triangle.
+
+        """
         if order == 1:
-            return self.mesh.tris[triIdx][0:3]
-        return self.mesh.tris6[triIdx][0:4]
+            return self.mesh.tris[triIdx,0:3]
+        return self.mesh.tris6[triIdx,0:4]
     
     def calcLineJacobian(self, lineIdx):
+        """
+
+        Parameters
+        ----------
+        lineIdx : integer
+            the line element whose jacobian we wish to calculate.
+
+        Returns
+        -------
+        J : 1x2 numpy.ndarray
+            vector storing J11 and J22.
+
+        """
         endpoints = self.mesh.lines[lineIdx][0:2]
         points = self.mesh.node_positions[endpoints][0:2]
         
@@ -158,6 +238,20 @@ class MeshOperations:
         return J
     
     def calcTriangleJacobian(self, triIdx):
+        """
+        Calculates the jacobian of the transformation from the reference triangle
+        to triangle triIdx
+        Parameters
+        ----------
+        triIdx : int
+            the triangle element whose jacobian we wish to calculate.
+
+        Returns
+        -------
+        J : 2x2 numpy.ndarray
+            The Jacobian matrix dx_i/dxi_j
+
+        """
         vertexIds = self.mesh.tris[triIdx][0:3]
         points = self.mesh.node_positions[vertexIds][0:3] 
         
@@ -170,6 +264,19 @@ class MeshOperations:
         return J
     
     def calcTriangleInverseJacobian(self, triIdx):
+        """
+        Find the inverse of the Jacobian matrix for triangle triIdx
+
+        Parameters
+        ----------
+        triIdx : int
+
+        Returns
+        -------
+        numpy.ndarray
+            J^-1
+
+        """
         return np.linalg.inv(self.calcTriangleJacobian(triIdx))
     
     def calcLineJacobianDeterminant(self, lineIdx):
@@ -180,12 +287,99 @@ class MeshOperations:
         return np.linalg.det(self.calcTriangleJacobian(triIdx))
     
     def calcTriangularIntegrationPoint(self, triIdx, int_point):
+        """
+        
+
+        Parameters
+        ----------
+        triIdx : int
+        int_point : ndarray
+            2 element array for matrix dot product with jacobian
+
+        Returns
+        -------
+        ndarray with two elements describing the transformed quadrature point
+        for the purposes of evaluating the forcing function
+
+        """
         J = self.calcTriangleJacobian(triIdx)
         p1n = self.mesh.tris[triIdx][0]
         refPos = self.mesh.node_positions[p1n][0:2]
         
         tv = np.dot(J.transpose(), int_point)
         return np.add(refPos, tv)
+    
+    def calcL2ErrorPoisson(self, u, order, phi):
+        """
+        this function is only useful for programming exercise 2, where the domain
+          has Dirichlet B.C. on x = 0 and y = 0,1 but v.N. B.C. on x = 1
+          
+          uses a fourier series of order 30 to compute a more exact s
+
+        Parameters
+        ----------
+        u : numpy ndarray
+            solution vector
+        order : integer
+            order of the solution.
+        phi : basis functions
+            array of phi_n(x, y) with length equal to 3*order.
+
+        Returns
+        -------
+        l2err : 1-element array
+            l2 error of solution u.
+
+        """
+        if 3*order != len(phi):
+            return None
+        l2err = 0
+        quadp, quadw, nquad = triangleIntegrationRule()
+        for i in range(self.getTriangleCount()):
+            
+            detJ = self.calcTriangleJacobianDeterminant(i)
+            for j in range(nquad):
+                shape = np.zeros((len(phi),1))
+                for bfunc in range(len(phi)):
+                    shape[bfunc] = phi[bfunc](quadp[j,0],quadp[j,1])
+                mIP = self.calcTriangularIntegrationPoint(i, quadp[j,:])
+                u_exact = 0
+                fo_ord = 30 # using a fourier series to find the exact solutions for comparison
+                for k in range(1,fo_ord+1):
+                    for l in range(1,fo_ord+1):
+                        if (l % 2) != 0:
+                            # basis function for neumann BC at 1 face
+                            coeff = 16/( (np.pi)**4 ) * 1/(l**3 * (2*k-1) + l*(2*k-1)**3/4)
+                            u_exact = u_exact + coeff * np.sin((k-0.5)*np.pi*mIP[0]) * np.sin(l*np.pi*mIP[1])
+                connectivity = self.getTriangleNodes(i, order)
+                # transpose shape to get a 1x1 matrix out of a (3*order x 1) and a (3*order x 1 )
+                #  matrix multiplied together
+                local_error = np.power(np.dot(shape.flatten(), u[connectivity].flatten())-u_exact,2)
+                l2err = l2err + quadw[j]*detJ*local_error
+        l2err = np.sqrt(l2err)
+        return l2err
+                            
+                            
+    def plot(self, ax, u, cmap='viridis'):
+        """
+
+        Parameters
+        ----------
+        ax : matplotlib axes that support trisurf-ing
+        u : solution vector to plot; with number of elements equal 
+            to the number of nodes in this mesh
+        cmap : the color map to use to make the 3d plot pretty; 
+               defaults to 'viridis'
+
+        Returns
+        -------
+        the trisurf plot
+
+        """
+
+        return ax.plot_trisurf(self.getListOfNodePositions()[:,0].flatten(),
+                self.getListOfNodePositions()[:,1].flatten(),
+                u.flatten(), cmap=cmap)
     
     
 class MeshGrid:
@@ -212,7 +406,6 @@ class MeshGrid:
             # scan file until we reach a mesh format declarator
             if not scan_for_keyword(meshfile, "$meshformat"):
                 return False
-            print("found format")
             # read mesh format information
             self.meshformat = meshfile.readline()
             #check for end of mesh formatting block
@@ -222,7 +415,6 @@ class MeshGrid:
 
             if not scan_for_keyword(meshfile, "$nodes"):
                 return False
-            print("reading nodes")
 
             self.num_nodes = int(meshfile.readline())
             self.node_positions = np.zeros((self.num_nodes, 3))
@@ -240,12 +432,10 @@ class MeshGrid:
                     self.bounding_box[0] = [min(self.bounding_box[0][k],nodex[k]) for k in range(3)]
                     self.bounding_box[1] = [max(self.bounding_box[1][k],nodex[k]) for k in range(3)]
                 self.node_positions[i] = nodex
-            print("read {} nodes".format(self.num_nodes))
             if not scan_for_keyword(meshfile, "$endnodes"):
                 return False
             if not scan_for_keyword(meshfile, "$elements"):
                 return False
-            print("found elements")
 
             self.num_elements = int(meshfile.readline())
             #constants given by the file format

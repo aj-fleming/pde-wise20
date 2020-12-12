@@ -209,7 +209,6 @@ classdef MeshOperations < handle
                         shape(5) = 4*quadPoints(j,1)*quadPoints(j,2);
                         shape(6) = 4*quadPoints(j,2)*(1 - quadPoints(j,1) - quadPoints(j,2));
                     end
-                    
                     % Calculate analytical value
                     mappedIP = meshOperationsObj.calcMappedIntegrationPointOfTriangle(i, quadPoints(j,:));
                     u_exact = 0;

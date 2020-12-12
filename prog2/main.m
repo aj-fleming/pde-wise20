@@ -1,2 +1,2 @@
 %% Preparation: add some paths
-addpath(genpath('mesh'));
+mops = MeshOperations('mesh/unitSquare1.msh');
