@@ -5,8 +5,6 @@ Created on Thu Dec 10 14:36:02 2020
 @author: AJ Fleming
 """
 import numpy as np
-from matplotlib.tri import Triangulation
-
 
 NODES_PER_ELEMENT_TYPE = [2,3,4,4,8,6,5,3,6,9,10,27,18,14,1,8,20,15,13]
 
@@ -311,6 +309,8 @@ class MeshOperations:
     
     def calcL2ErrorPoisson(self, u, order, phi):
         """
+        finds the L2 norm error between u and the 30-element Fourier series solution
+          of -laplace u = 1
         this function is only useful for programming exercise 2, where the domain
           has Dirichlet B.C. on x = 0 and y = 0,1 but v.N. B.C. on x = 1
           

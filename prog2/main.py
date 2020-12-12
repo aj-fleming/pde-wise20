@@ -67,7 +67,7 @@ def setBoundaryValues(meshdata, A, b, order):
         #do nothing for v.N. boundary conditions
     
     return A, b
-            
+     
 
 mesh_A = MeshOperations("mesh/unitSquare1.msh")
 mesh_B = MeshOperations("mesh/unitSquare2.msh")
@@ -108,16 +108,49 @@ u1a = np.linalg.solve(A1a2, b1a2)
 u1b = np.linalg.solve(A1b2, b1b2)
 u1c = np.linalg.solve(A1c2, b1c2)
 
-fig1 = plt.figure(1)
-mesh_A.plot(fig1.gca(projection='3d'), u1a)
-fig2 = plt.figure(2)
-mesh_B.plot(fig2.gca(projection='3d'), u1b)
-fig3 = plt.figure(3)
-mesh_B.plot(fig3.gca(projection='3d'), u1c)
+fig = plt.figure(1)
+fig.suptitle("Solution to 1a: f(x,y) = 1 on unitSquare1")
+mesh_A.plot(fig.gca(projection='3d'), u1a)
+fig = plt.figure(2)
+fig.suptitle("Solution to 1b: f(x,y) = 1 on unitSquare2")
+mesh_B.plot(fig.gca(projection='3d'), u1b)
+fig = plt.figure(3)
+fig.suptitle("Solution to 1c: f(x,y) = sin(2*pi*x) on unitSquare2")
+mesh_B.plot(fig.gca(projection='3d'), u1c)
+
+mesh64 = MeshOperations("mesh/mesh64.msh")
+mesh256 = MeshOperations("mesh/mesh256.msh")
+mesh1024 = MeshOperations("mesh/mesh1024.msh")
+
+a64, b64 = setBoundaryValues(mesh64,
+                             *setEquationsSystem(mesh64,basis1stOrder,gradBasis1stOrder,order,f1a),
+                             order)
+a256, b256 = setBoundaryValues(mesh256,
+                             *setEquationsSystem(mesh256,basis1stOrder,gradBasis1stOrder,order,f1a),
+                             order)
+a1024, b1024 = setBoundaryValues(mesh1024,
+                             *setEquationsSystem(mesh1024,basis1stOrder,gradBasis1stOrder,order,f1a),
+                             order)
+u64=np.linalg.solve(a64,b64)
+u256 = np.linalg.solve(a256,b256)
+u1024 = np.linalg.solve(a1024,b1024)
+
+fig = plt.figure(4)
+fig.suptitle("Solution to $\Delta u = 1$ on mesh64")
+mesh64.plot(fig.gca(projection='3d'), u64)
+fig = plt.figure(5)
+fig.suptitle("Solution to $\Delta u = 1$ on mesh256")
+mesh256.plot(fig.gca(projection='3d'), u256)
+fig = plt.figure(6)
+fig.suptitle("Solution to $\Delta u = 1$ on mesh1024")
+mesh1024.plot(fig.gca(projection='3d'), u1024)
+
+errs = [
+        mesh64.calcL2ErrorPoisson(u64,order,basis1stOrder),
+        mesh256.calcL2ErrorPoisson(u256,1,basis1stOrder),
+        mesh1024.calcL2ErrorPoisson(u1024,1,basis1stOrder)
+        ]
 plt.show()
-
-print(mesh_A.calcL2ErrorPoisson(u1a, 1, basis1stOrder))
-
 
     
 
