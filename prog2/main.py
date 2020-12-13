@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from meshops import MeshOperations, triangleIntegrationRule
+from meshops import MeshOperations
 from prog2routines import setEquationsSystem, setBoundaryValues
 
    
@@ -23,16 +23,17 @@ basis2ndOrder = [
     lambda xi, eta:  xi*(2*xi-1),
     lambda xi, eta:  eta*(2*eta-1),
     lambda xi, eta:  4*xi*(1-xi-eta),
-    lambda xi, eta:  4*eta*(1-xi-eta),
-    lambda xi, eta:  4*xi*eta
+    lambda xi, eta:  4*xi*eta,
+    lambda xi, eta:  4*eta*(1-xi-eta)
+    
     ]
 gradBasis2ndOrder = [
     lambda xi,eta: np.array([[-3+4*xi+4*eta],[-3+4*xi+4*eta]]),
     lambda xi,eta: np.array([[4*xi-1],[0]]),
     lambda xi,eta: np.array([[0],[4*eta-1]]),
     lambda xi,eta: np.array([[4-8*xi-4*eta],[-4*xi]]),
-    lambda xi,eta: np.array([[-4*eta],[4-8*eta-4*xi]]),
-    lambda xi,eta: np.array([[4*eta],[4*xi]])
+    lambda xi,eta: np.array([[4*eta],[4*xi]]),
+    lambda xi,eta: np.array([[-4*eta],[4-8*eta-4*xi]])
     ]
 
 
@@ -65,8 +66,8 @@ mesh_A.plot(fig.gca(projection='3d'), u1a)
 fig = plt.figure(2)
 fig.suptitle("Solution to 1b: f(x,y) = 1 on unitSquare2")
 mesh_B.plot(fig.gca(projection='3d'), u1b)
-fig = plt.figure(3)
-fig.suptitle("Solution to 1c: f(x,y) = sin(2*pi*x) on unitSquare2")
+fig = plt.figure()
+fig.suptitle("Solution to 1c: $f(x,y) = \sin(2*\pi*x)$ on unitSquare2")
 mesh_B.plot(fig.gca(projection='3d'), u1c)
 
     
