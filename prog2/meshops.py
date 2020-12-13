@@ -211,7 +211,7 @@ class MeshOperations:
         """
         if order == 1:
             return self.mesh.tris[triIdx,0:3]
-        return self.mesh.tris6[triIdx,0:4]
+        return self.mesh.tris6[triIdx,0:6]
     
     def calcLineJacobian(self, lineIdx):
         """
