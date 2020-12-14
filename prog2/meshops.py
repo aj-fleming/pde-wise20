@@ -83,7 +83,8 @@ class MeshOperations:
         nodeinf = "\t{} total nodes".format(self.mesh.num_nodes)
         lineinf ="\t{} total lines and {} second order lines".format(self.mesh.num_lines,self.mesh.num_lines3)
         triinf = "\t{} total triangles and {} second order triangles".format(self.mesh.num_tris, self.mesh.num_tris6)
-        return "\n".join([bbinf, nodeinf, lineinf, triinf])
+        quadinf = "\t{} total quads".format(self.mesh.num_quads)
+        return "\n".join([bbinf, nodeinf, lineinf, triinf, quadinf])
     
     def getLineTag(self, i):
         """
