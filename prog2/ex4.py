@@ -27,7 +27,7 @@ gradBasis = [
     ]
 
 def f(x,y):
-    return 1
+    return np.sin(2*np.pi*x)
 
 a1,b1 = setEquationsSystemQuadElements(mesh,basis,gradBasis,f)
 a2,b2 = setBoundaryValues(mesh, a1.copy(), b1.copy(),1)
@@ -36,7 +36,7 @@ u = np.linalg.solve(a2,b2)
 
 fig = plt.figure()
 ax = fig.gca(projection='3d')
-
+fig.suptitle("Solution to 1a: $f(x,y) = \sin 2\pi x$ using quadrilateral elements")
 nodePos = mesh.getListOfNodePositions()
 
 ax.plot_trisurf(nodePos[:,0].flatten(),nodePos[:,1].flatten(),u.flatten(),cmap='viridis')
