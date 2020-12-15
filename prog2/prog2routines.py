@@ -46,6 +46,63 @@ def setEquationsSystem(meshdata, phi, delphi, order, forcingfunc):
     
     return global_A, global_b
 
+def setEquationsSystemQuadElements(meshdata, phi, delphi, forcingfunc):
+    num_nodes = meshdata.getNodeCount()
+    global_A = np.zeros((num_nodes, num_nodes))
+    global_b = np.zeros((num_nodes, 1))
+    
+    qp1, qw, nq = triangleIntegrationRule()
+    qp2 = np.add(1,-1*qp1)
+    
+    quads = meshdata.getListOfQuads()
+    
+    for quadIdx in range(meshdata.getQuadCount()):
+        # define element A and b for first order quad elements 
+        element_A = np.zeros((4,4))
+        element_b = np.zeros((4,1))
+        
+        J1, J2 = meshdata.calcQuadJacobians(quadIdx)
+        detJ1 = np.linalg.det(J1)
+        detJ2 = np.linalg.det(J2)
+        
+        #find the inverses of the jacobian transposes
+        J1_inv = np.linalg.inv(J1.transpose())
+        J2_inv = np.linalg.inv(J2.transpose())
+        nodes = quads[quadIdx]
+        v = meshdata.getListOfNodePositions()[nodes]
+        a1 = np.vstack([v[0,:]]*nq).transpose()
+        a2 = np.vstack([v[1,:]-v[2,:]+v[3,:]]*nq).transpose()
+        
+        mp1 = (a1 + np.dot(J1,qp1.transpose())).transpose()
+        mp2 = (a2 + np.dot(J2,qp2.transpose())).transpose()
+        for i in range(4):
+            for j in range(4):
+                
+                for k in range(nq):
+                    refpos = qp1[k][:]
+                    temp1 = qw[k]*np.abs(detJ1)*np.dot(
+                        # transpose this one to align shapes for dot product
+                            np.dot(J1_inv, delphi[i](*refpos)).transpose(),
+                            np.dot(J1_inv, delphi[j](*refpos))
+                        )
+                    refpos2 = qp2[k,:]
+                    temp2 = qw[k]*np.abs(detJ2)*np.dot(
+                        # transpose this one to align shapes for dot product
+                            np.dot(J2_inv, delphi[i](*refpos2)).transpose(),
+                            np.dot(J2_inv, delphi[j](*refpos2))
+                        )
+                    element_A[i][j] = element_A[i][j] + temp1 + temp2
+                    if j == 0:
+                        temp1 = qw[k]*forcingfunc(*mp1[k])*np.abs(detJ1)*phi[i](*refpos)
+                        temp2 = qw[k]*forcingfunc(*mp2[k])*np.abs(detJ2)*phi[i](*refpos2)
+                        element_b[i] = element_b[i] + temp1 + temp2
+        for i in range(4):
+            g_i = nodes[i]
+            for j in range(4):
+                g_j = nodes[j]
+                global_A[g_i][g_j] = global_A[g_i][g_j] + element_A[i][j]
+            global_b[g_i] = global_b[g_i] + element_b[i]
+    return global_A, global_b
 
 def setBoundaryValues(meshdata, A, b, order):
     nodesD = set()
