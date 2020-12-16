@@ -55,7 +55,7 @@ def triangleIntegrationRule():
     quadWeights[4:7] = (155 - np.sqrt(15))/2400;
     
     return quadPoints, quadWeights, 7
-
+    
 
 class MeshOperations:
     """Contains many useful methods for dealing with 2-d triangular meshes"""
@@ -83,7 +83,8 @@ class MeshOperations:
         nodeinf = "\t{} total nodes".format(self.mesh.num_nodes)
         lineinf ="\t{} total lines and {} second order lines".format(self.mesh.num_lines,self.mesh.num_lines3)
         triinf = "\t{} total triangles and {} second order triangles".format(self.mesh.num_tris, self.mesh.num_tris6)
-        return "\n".join([bbinf, nodeinf, lineinf, triinf])
+        quadinf = "\t{} total quads".format(self.mesh.num_quads)
+        return "\n".join([bbinf, nodeinf, lineinf, triinf, quadinf])
     
     def getLineTag(self, i):
         """
@@ -141,7 +142,8 @@ class MeshOperations:
 
         """
         return self.mesh.tris[:,0:3]
-    
+    def getListOfQuads(self):
+        return self.mesh.quads[:,0:4]
     def getListOfNodePositions(self):
         """
         Returns
@@ -163,6 +165,8 @@ class MeshOperations:
         """
         return self.mesh.num_tris
     
+    def getQuadCount(self):
+        return self.mesh.num_quads
     def getLineCount(self):
         """
         Returns
@@ -211,7 +215,7 @@ class MeshOperations:
         """
         if order == 1:
             return self.mesh.tris[triIdx,0:3]
-        return self.mesh.tris6[triIdx,0:4]
+        return self.mesh.tris6[triIdx,0:6]
     
     def calcLineJacobian(self, lineIdx):
         """
@@ -255,15 +259,35 @@ class MeshOperations:
         
         J = np.zeros((2,2))
         J[0][0] = points[1][0] - points[0][0]
-        J[0][1] = points[1][1] - points[0][1]
-        J[1][0] = points[2][0] - points[0][0]
+        J[1][0] = points[1][1] - points[0][1]
+        J[0][1] = points[2][0] - points[0][0]
         J[1][1] = points[2][1] - points[0][1]
         
         return J
     
+    def calcQuadJacobians(self, quadIdx):
+        
+        vertIds = self.mesh.quads[quadIdx,0:4]
+        v = self.mesh.node_positions[vertIds, 0:3]
+        
+        J1 = np.zeros((2,2))
+        J2 = np.zeros((2,2))
+        
+        J1[0][0] = v[1][0] - v[0][0]
+        J1[1][0] = v[1][1] - v[0][1]
+        J1[0][1] = v[3][0] - v[0][0]
+        J1[1][1] = v[3][1] - v[0][1]
+        
+        J2[0][0] = v[2][0] - v[3][0]
+        J2[0][1] = v[2][0] - v[1][0]
+        J2[1][0] = v[2][1] - v[3][1]
+        J2[1][1] = v[2][1] - v[1][1]
+        
+        return J1, J2
+    
     def calcTriangleInverseJacobian(self, triIdx):
         """
-        Find the inverse of the Jacobian matrix for triangle triIdx
+        Find the inverse of the transpose of the Jacobian matrix for triangle triIdx
 
         Parameters
         ----------
@@ -272,10 +296,10 @@ class MeshOperations:
         Returns
         -------
         numpy.ndarray
-            J^-1
+            J'^-1
 
         """
-        return np.linalg.inv(self.calcTriangleJacobian(triIdx))
+        return np.linalg.inv(self.calcTriangleJacobian(triIdx).transpose())
     
     def calcLineJacobianDeterminant(self, lineIdx):
         J = self.calcLineJacobian(lineIdx)
@@ -286,8 +310,6 @@ class MeshOperations:
     
     def calcTriangularIntegrationPoint(self, triIdx, int_point):
         """
-        
-
         Parameters
         ----------
         triIdx : int
@@ -302,9 +324,9 @@ class MeshOperations:
         """
         J = self.calcTriangleJacobian(triIdx)
         p1n = self.mesh.tris[triIdx][0]
-        refPos = self.mesh.node_positions[p1n][0:2]
+        refPos = self.mesh.node_positions[p1n][0:2].reshape((2,1))
         
-        tv = np.dot(J.transpose(), int_point)
+        tv = np.dot(J, int_point.reshape(2,1))
         return np.add(refPos, tv)
     
     def calcL2ErrorPoisson(self, u, order, phi):
@@ -495,7 +517,7 @@ class MeshGrid:
                 elif self.element_infos[i][1] == 3:
                     for j in range(4):
                         self.quads[self.num_quads][j] = nodeids[element_nodes[j]]
-                    self.quads[self.num_quads][3] = self.element_infos[i][tagidx]
+                    self.quads[self.num_quads][4] = self.element_infos[i][tagidx]
                     self.num_quads = self.num_quads + 1
 
                 #TODO tetras/hexes/prisms/pyramids
