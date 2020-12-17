@@ -30,7 +30,7 @@ gmsh.model.geo.addPlaneSurface([1],1)
 
 
 for i in range(4):
-    gmsh.model.geo.mesh.setTransfiniteCurve(i+1, 20)
+    gmsh.model.geo.mesh.setTransfiniteCurve(i+1, 10)
 gmsh.model.geo.mesh.setTransfiniteSurface(1,cornerTags=[1,2,3,4])
 gmsh.model.geo.mesh.setRecombine(2,1)
 

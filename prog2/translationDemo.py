@@ -10,7 +10,9 @@ import numpy as np
 
 from meshops import triangleIntegrationRule
 
+# get the integration points for the triangle on the lower left
 qP, qW, n = triangleIntegrationRule()
+# create integration points for the triangle on the upper right
 tqP = np.add(1,-1*qP)
 fig = plt.figure()
 ax = fig.gca()
@@ -22,13 +24,15 @@ ax.plot([0,0,1],[1,0,0], color="red")
 ax.plot([1,1,0],[0,1,1],color="blue")
 ax.plot([1,0],[0,1],color="purple",linestyle=":")
 
+# vertices of arbitrary quad
 v = np.array([
     [2,2],
     [3,1],
-    [4,4],
+    [4,3],
     [2,4]
     ])
 
+#vertices of unit square
 v2 = np.array([
     [0,0],
     [1,0],
@@ -65,6 +69,7 @@ A = np.vstack([a]*3).transpose()
 boundary = A + np.dot(J1, v2[verts].transpose())
 ax.scatter(points[0,:],points[1,:],color="red",marker="+")
 ax.plot(boundary[0,:],boundary[1,:],color="red")
+ax.plot(boundary[[0,2],:],boundary[[0,2],:],color="purple", linestyle=":")
 
 
 

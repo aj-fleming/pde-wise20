@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 from meshops import MeshOperations
 from prog2routines import setEquationsSystem, setBoundaryValues
-mesh = MeshOperations("mesh/unitSquare2ndOrder.msh")
+mesh = MeshOperations("mesh/fun.msh")
 
 basis2ndOrder = [
     lambda xi, eta: 1-3*(xi+eta)+2*(xi**2+eta**2)+4*xi*eta,
@@ -31,7 +31,7 @@ gradBasis2ndOrder = [
     ]
 
 
-a,b = setEquationsSystem(mesh,basis2ndOrder, gradBasis2ndOrder, 2, lambda x,y: 1)
+a,b = setEquationsSystem(mesh,basis2ndOrder, gradBasis2ndOrder, 2, lambda x,y: np.sin(2*np.pi*x)*np.sin(2*np.pi*y))
 a, b = setBoundaryValues(mesh, a, b, 2)
 u = np.linalg.solve(a,b)
 

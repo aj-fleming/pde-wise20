@@ -104,26 +104,21 @@ def setEquationsSystemQuadElements(meshdata, phi, delphi, forcingfunc):
             global_b[g_i] = global_b[g_i] + element_b[i]
     return global_A, global_b
 
+tags2value = {
+    2:0, 4:0, 5:0
+    }
 def setBoundaryValues(meshdata, A, b, order):
-    nodesD = set()
-    nodesN = set()
+    setNodes = set()
     
     for lineIdx in range(meshdata.getLineCount()):
         tag = meshdata.getLineTag(lineIdx)
-        if tag == 2:
-            nodesD = nodesD.union(set(meshdata.getLineNodes(lineIdx, order)))
-        elif tag == 3:
-            nodesN = nodesN.union(set(meshdata.getLineNodes(lineIdx, order)))
-        # else internal node or strange exotic boundary condition
-    # size of b should be the number of nodes
-    for i in range(b.shape[0]):
-        if i in nodesD:
-            # enforce dirichlet boundary
-            # for this problem we can use lifting to make sure that they're zero
-            b[i][0] = 0
-            A[i][:] = 0
-            A[i][i] = 1
-        
-        #do nothing for v.N. boundary conditions
+        nodes = meshdata.getLineNodes(lineIdx, order)
+        for n in nodes:
+            setNodes.add(n)
+            # force Dirichlet boundary conditions from the known b.c.
+            if tag in tags2value:
+                b[n][0] = tags2value[tag]
+                A[n, :] = 0
+                A[n, n] = 1
     
     return A, b

@@ -11,8 +11,10 @@ from prog2routines import setBoundaryValues, setEquationsSystemQuadElements
 import matplotlib.pyplot as plt
 import numpy as np
 
-mesh = MeshOperations("mesh/quadrilateralmesh.msh")
+mesh = MeshOperations("mesh/unitSquare3.msh")
 
+#bilinear finite elements
+#from the homework
 basis = [
        lambda xi, eta: 1-xi-eta+xi*eta,
        lambda xi, eta: xi-xi*eta,
