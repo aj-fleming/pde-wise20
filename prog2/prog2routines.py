@@ -9,8 +9,9 @@ from meshops import triangleIntegrationRule
 
 
 def setEquationsSystem(meshdata, phi, delphi, order, forcingfunc):
-    global_A = np.zeros((meshdata.getNodeCount(),meshdata.getNodeCount()))
-    global_b = np.zeros((meshdata.getNodeCount(),1))
+    N = meshdata.getNodeCount()
+    global_A = np.zeros((N,N))
+    global_b = np.zeros((N,1))
     
     [quadp, quadw, nquad] = triangleIntegrationRule()
     
@@ -21,8 +22,9 @@ def setEquationsSystem(meshdata, phi, delphi, order, forcingfunc):
         element_A = np.zeros((3*order,3*order))
         element_b = np.zeros((3*order,1))
         
-        for i in range(element_A.shape[0]):
-            for j in range (element_A.shape[1]):
+        for i in range(3*order):
+            for j in range (3*order):
+                # compute a(u,v) using gaussian quadrature
                 for k in range(nquad):
                     refpos = quadp[k][:]
                     temp = quadw[k]*np.abs(detJ)*np.dot(

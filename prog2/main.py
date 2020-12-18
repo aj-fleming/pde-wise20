@@ -19,13 +19,12 @@ gradBasis1stOrder = [
     ]
 
 basis2ndOrder = [
-    lambda xi, eta: 1-3*(xi+eta)+2*(xi**2+eta**2)+4*xi*eta,
+    lambda xi, eta:  1-3*(xi+eta)+2*(xi**2+eta**2)+4*xi*eta,
     lambda xi, eta:  xi*(2*xi-1),
     lambda xi, eta:  eta*(2*eta-1),
     lambda xi, eta:  4*xi*(1-xi-eta),
     lambda xi, eta:  4*xi*eta,
-    lambda xi, eta:  4*eta*(1-xi-eta)
-    
+    lambda xi, eta:  4*eta*(1-xi-eta)    
     ]
 gradBasis2ndOrder = [
     lambda xi,eta: np.array([[-3+4*xi+4*eta],[-3+4*xi+4*eta]]),
@@ -61,13 +60,13 @@ u1b = np.linalg.solve(A1b2, b1b2)
 u1c = np.linalg.solve(A1c2, b1c2)
 
 fig = plt.figure(1)
-fig.suptitle("Solution to 1a: f(x,y) = 1 on unitSquare1")
+fig.suptitle("Solution to 1a: $-\Delta u = 1$ on unitSquare1")
 mesh_A.plot(fig.gca(projection='3d'), u1a)
 fig = plt.figure(2)
-fig.suptitle("Solution to 1b: f(x,y) = 1 on unitSquare2")
+fig.suptitle("Solution to 1b: $-\Delta u = 1$ on unitSquare2")
 mesh_B.plot(fig.gca(projection='3d'), u1b)
 fig = plt.figure()
-fig.suptitle("Solution to 1c: $f(x,y) = \sin(2*\pi*x)$ on unitSquare2")
+fig.suptitle("Solution to 1c: $-\Delta u = \sin(2*\pi*x)$ on unitSquare2")
 mesh_B.plot(fig.gca(projection='3d'), u1c)
 plt.show()
     

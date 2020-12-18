@@ -69,7 +69,7 @@ A = np.vstack([a]*3).transpose()
 boundary = A + np.dot(J1, v2[verts].transpose())
 ax.scatter(points[0,:],points[1,:],color="red",marker="+")
 ax.plot(boundary[0,:],boundary[1,:],color="red")
-ax.plot(boundary[[0,2],:],boundary[[0,2],:],color="purple", linestyle=":")
+ax.plot(boundary[0,[0,2]], boundary[1,[0,2]],color="purple", linestyle=":")
 
 
 

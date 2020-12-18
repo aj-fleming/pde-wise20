@@ -366,7 +366,8 @@ class MeshOperations:
                     shape[bfunc] = phi[bfunc](quadp[j,0],quadp[j,1])
                 mIP = self.calcTriangularIntegrationPoint(i, quadp[j,:])
                 u_exact = 0
-                fo_ord = 30 # using a fourier series to find the exact solutions for comparison
+                fo_ord = 30 
+                # using a fourier series to find the exact solutions for comparison
                 for k in range(1,fo_ord+1):
                     for l in range(1,fo_ord+1):
                         if (l % 2) != 0:
