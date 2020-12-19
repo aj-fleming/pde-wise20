@@ -18,23 +18,6 @@ gradBasis1stOrder = [
     lambda xi,eta: np.array([[0],[1]])
     ]
 
-basis2ndOrder = [
-    lambda xi, eta:  1-3*(xi+eta)+2*(xi**2+eta**2)+4*xi*eta,
-    lambda xi, eta:  xi*(2*xi-1),
-    lambda xi, eta:  eta*(2*eta-1),
-    lambda xi, eta:  4*xi*(1-xi-eta),
-    lambda xi, eta:  4*xi*eta,
-    lambda xi, eta:  4*eta*(1-xi-eta)    
-    ]
-gradBasis2ndOrder = [
-    lambda xi,eta: np.array([[-3+4*xi+4*eta],[-3+4*xi+4*eta]]),
-    lambda xi,eta: np.array([[4*xi-1],[0]]),
-    lambda xi,eta: np.array([[0],[4*eta-1]]),
-    lambda xi,eta: np.array([[4-8*xi-4*eta],[-4*xi]]),
-    lambda xi,eta: np.array([[4*eta],[4*xi]]),
-    lambda xi,eta: np.array([[-4*eta],[4-8*eta-4*xi]])
-    ]
-
 
 def f1c(x,y):
     return np.sin(2*np.pi*x)

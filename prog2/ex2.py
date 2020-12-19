@@ -57,14 +57,16 @@ errs = [
             mesh256.calcL2ErrorPoisson(u256,1,basis1stOrder),
             mesh1024.calcL2ErrorPoisson(u1024,1,basis1stOrder)
         ]
-fig = plt.figure(4)
+fig = plt.figure()
 ax = fig.gca()
 fig.suptitle("$L^2$ error in solutions to $\Delta u = 1$")
 ax.set_xscale("log",basex=2)
 ax.set_xlabel("Number of Elements")
 ax.set_yscale("log")
 ax.set_ylabel("Measured $L^2$ Error")
-ax.plot([64,256,1024],errs)
+ax.plot([64,256,1024],errs,color="blue")
 ax.scatter([64,256,1024], errs, marker="+",color="red")
+ax.plot([64,256,1024],np.power([64.0,256.0,1024.0],-1),color="green")
+ax.plot([64,256,1024],np.power([64.0,256.0,1024.0],-2),color="orange")
 
 plt.show()

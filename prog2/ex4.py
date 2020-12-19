@@ -11,7 +11,7 @@ from prog2routines import setBoundaryValues, setEquationsSystemQuadElements
 import matplotlib.pyplot as plt
 import numpy as np
 
-mesh = MeshOperations("mesh/unitSquare3.msh")
+mesh = MeshOperations("mesh/quadrilateralmesh.msh")
 
 #bilinear finite elements
 #from the homework

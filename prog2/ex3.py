@@ -13,7 +13,7 @@ from prog2routines import setEquationsSystem, setBoundaryValues
 mesh = MeshOperations("mesh/unitSquare2ndOrder.msh")
 
 basis2ndOrder = [
-    lambda xi, eta: 1-3*(xi+eta)+2*(xi**2+eta**2)+4*xi*eta,
+    lambda xi, eta:  1-3*(xi+eta)+2*(xi**2+eta**2)+4*xi*eta,
     lambda xi, eta:  xi*(2*xi-1),
     lambda xi, eta:  eta*(2*eta-1),
     lambda xi, eta:  4*xi*(1-xi-eta),
