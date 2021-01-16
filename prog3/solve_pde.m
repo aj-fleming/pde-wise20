@@ -1,24 +1,20 @@
-function u = solve_pde(N,T,u0,F_type)
+function u = solve_pde(N,T,u0_interval,u0,F_type)
 % u0 - matrix size: n by 3; n number of intervals; 1st value left bound,
 % 2nd value right bound, 3rd value- value of function2
-f_type = 'burgers';
+f_type = 'advection';
 % initialize
-interval = linspace(u0(1,1),u0(end,2),N);
+interval = linspace(u0_interval(1),u0_interval(2),N);
 dx = interval(2)-interval(1);
 switch f_type
     case 'advection'
         dt = dx/2;
     case 'burgers'
-        dt = dx/u0(end,2);
+        dt = dx/u0_interval(2);
 end
 t = 0:dt:T;
 u = zeros(length(t),N);
-for idx = 1:size(u0,1)
-    for idx2 = 1:length(u(1,:))
-        if interval(idx2)>=u0(idx,1) && interval(idx2)<u0(idx,2)
-            u(1,idx2) = u0(idx,3);
-        end
-    end
+for idx2 = 1:length(u(1,:))
+    u(1,idx2) = u0(interval(idx2));
 end
 u(1,end) = 1;
 for n=1:size(u,1)
