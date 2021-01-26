@@ -1,14 +1,14 @@
-function u = solve_pde(N,T,dt,u0_interval,u0,F_type)
+function [u , x_vec, t] = solve_pde(N,T,dt,dt_CFL,u0_interval,u0,F_type,f_type)
 % Inputs:
 %       N - number of gridpoints in space domain
 %       T - end time 
-%       dt - time step; specify 0 to use default value based on CFL;
+%       dt - custom time step;
+%       dt_CFL - CFL factor from 0 to 1;
 %       u0_interval - domain of the space e.g: [-1 1]
 %       u0 - function handle of the initial condition
 %       F_type - numerical flux type; options: 'naive', 'LF', 'LW' 
 % Outputs:
 %       u - the solution in matrix form; each row is u(x) at specific time
-f_type = 'advection'; % type of flux function; 'advection' or 'burgers'
 % create the space discretization
 x_vec = linspace(u0_interval(1),u0_interval(2),N);
 dx = x_vec(2)-x_vec(1);
@@ -16,11 +16,11 @@ dx = x_vec(2)-x_vec(1);
 switch f_type
     case 'advection'
         if dt==0 || dt > dx/2
-            dt = dx/2;
+            dt = dt_CFL*dx/2;
         end
     case 'burgers'
-        if dt==0 || dt> dx/max(u0_interval) 
-            dt = dx/max(u0_interval);
+        if dt==0 || dt> dx 
+            dt = dt_CFL*dx;
         end
 end
 % create time discretization vector
@@ -32,7 +32,7 @@ for idx2 = 1:length(u(1,:))
     u(1,idx2) = u0(x_vec(idx2));
 end
 % solve the pde for u at each j and n
-for n=1:size(u,1)
+for n=1:size(u,1)-1
     for j=1:size(u,2)
         if j > 1 && j < size(u,2)
             % solution for interior space points
