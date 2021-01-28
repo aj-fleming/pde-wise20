@@ -4,3 +4,6 @@
 */__pycache__
 */.DS_STORE
 */.DS_Store
+prog3/conv_disc_adv.mat
+prog3/conv_smooth_adv.mat
+prog3/conv_smooth_burg.mat
