@@ -1,5 +1,5 @@
 clear all
-T = 0.5; %Time
+T = 0.25; %Time
 u0 = @(x) sin(pi*x); % function handle of initial condition sin(pi x)
 uEx = @(x,t) u0(x-2*t); % exact solution
 k = 1;
@@ -14,19 +14,32 @@ for pow = 6:12
     [u_dt_LF, ~, ~] = solve_pde(N,T,dt,dt_CFL,u0_interval,u0,'LF',f_type); % solve the pde
     [u_dt_LW, x_v, t] = solve_pde(N,T,dt,dt_CFL,u0_interval,u0,'LW',f_type); % solve the pde
     u = zeros(length(t),length(x_v));
+    dx = x_v(2)-x_v(1);
+    dt = t(2) - t(1);
+    u_p0 = zeros(length(t),length(x_v));
+    max_xv = length(x_v);
     for idx = 1:length(t)
-        for idx2 = 1:length(x_v)
-            u(idx,idx2) = uEx(x_v(idx2),(t(idx)));
+        for idx2 = 1:max_xv
+            u(idx,idx2) = uEx(x_v(idx2),t(idx));
+            if idx2 ==1
+                u_p0(idx,idx2) = uEx(x_v(idx2),t(idx));
+            elseif idx2==max_xv
+                u_p0(idx,idx2) = uEx(x_v(idx2),t(idx));
+            else
+                u_p0(idx,idx2) = (uEx(x_v(idx2)-dx/2,t(idx)) + uEx(x_v(idx2)+dx/2,t(idx)))/2;
+            end
         end
-        u_err_naive(idx) = norm(u_dt_naive(idx,:) - u(idx,:),1);
-        u_err_LF(idx) = norm(u_dt_LF(idx,:) - u(idx,:),1);
-        u_err_LW(idx) = norm(u_dt_LW(idx,:) - u(idx,:),1);
     end
-    u_err_pow_naive(k) = max(u_err_naive);
-    u_err_pow_LF(k) = max(u_err_LF);
-    u_err_pow_LW(k) = max(u_err_LW);
+    u_err_pow_naive(k) = norm(u_dt_naive-u,Inf);
+    u_err_pow_LF(k) = norm(u_dt_LF-u,Inf);
+    u_err_pow_LW(k) = norm(u_dt_LW-u,Inf);
+    u_err_pow_naive_p0(k) = norm(u_dt_naive-u_p0,Inf);
+    u_err_pow_LF_p0(k) = norm(u_dt_LF-u_p0,Inf);
+    u_err_pow_LW_p0(k) = norm(u_dt_LW-u_p0,Inf);
     k = k+1;
+    dx_vec(k) = dx;
 end
+figure
 loglog(2.^(6:12),u_err_pow_naive)
 hold on
 loglog(2.^(6:12),u_err_pow_LF)
@@ -34,4 +47,14 @@ loglog(2.^(6:12),u_err_pow_LW)
 legend('naive', 'LF', 'LW')
 xlabel('Number of grid points')
 ylabel('Error L_1 norm')
+title('Exact Solution Error')
+figure
+loglog(2.^(6:12),u_err_pow_naive_p0)
+hold on
+loglog(2.^(6:12),u_err_pow_LF_p0)
+loglog(2.^(6:12),u_err_pow_LW_p0)
+legend('naive', 'LF', 'LW')
+xlabel('Number of grid points')
+ylabel('Error L_1 norm')
+title('P0 Error')
 save('conv_smooth_adv')

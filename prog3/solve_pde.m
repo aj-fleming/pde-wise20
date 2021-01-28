@@ -2,7 +2,7 @@ function [u , x_vec, t] = solve_pde(N,T,dt,dt_CFL,u0_interval,u0,F_type,f_type)
 % Inputs:
 %       N - number of gridpoints in space domain
 %       T - end time 
-%       dt - custom time step;
+%       dt - custom time step; set to 0 if it is not to be defined
 %       dt_CFL - CFL factor from 0 to 1;
 %       u0_interval - domain of the space e.g: [-1 1]
 %       u0 - function handle of the initial condition
