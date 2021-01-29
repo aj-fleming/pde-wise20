@@ -30,12 +30,12 @@ for pow = 6:12
             end
         end
     end
-    u_err_pow_naive(k) = norm(u_dt_naive-u,Inf);
-    u_err_pow_LF(k) = norm(u_dt_LF-u,Inf);
-    u_err_pow_LW(k) = norm(u_dt_LW-u,Inf);
-    u_err_pow_naive_p0(k) = norm(u_dt_naive-u_p0,Inf);
-    u_err_pow_LF_p0(k) = norm(u_dt_LF-u_p0,Inf);
-    u_err_pow_LW_p0(k) = norm(u_dt_LW-u_p0,Inf);
+    u_err_pow_naive(k) = dx*norm(u_dt_naive-u,Inf);
+    u_err_pow_LF(k) = dx*norm(u_dt_LF-u,Inf);
+    u_err_pow_LW(k) = dx*norm(u_dt_LW-u,Inf);
+    u_err_pow_naive_p0(k) = dx*norm(u_dt_naive-u_p0,Inf);
+    u_err_pow_LF_p0(k) = dx*norm(u_dt_LF-u_p0,Inf);
+    u_err_pow_LW_p0(k) = dx*norm(u_dt_LW-u_p0,Inf);
     k = k+1;
     dx_vec(k) = dx;
 end
