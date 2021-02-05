@@ -1,3 +1,3 @@
-function [U, T] = solve_euler(args)
+function [U, T] = Euler_Solver(args)
     
 end
