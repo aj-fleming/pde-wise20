@@ -38,8 +38,8 @@ for n = 1:size(U,3)-1 %iterate over time
     %calc first one
     U(:,1,n+1) = U(:,1,n)-dt/dx*(F(U(:,1,n),U(:,2,n))-F(U(:,1,n),U(:,1,n)));
     for j = 2:size(U,2)-1 %iterate over x
-        F_1 = F(U(:,j,n),U(:,j+1,n));
-        F_2 = F(U(:,j-1,n),U(:,j,n));
+        F_1 = F_LF(U(:,j,n),U(:,j+1,n),lambda);
+        F_2 = F_LF(U(:,j-1,n),U(:,j,n),lambda);
         U(:,j,n+1) = U(:,j,n)-dt/dx*(F_1-F_2);
     end
     %calc last one
@@ -47,6 +47,31 @@ for n = 1:size(U,3)-1 %iterate over time
     U(:,j,n+1) = U(:,j,n)-dt/dx*(F(U(:,j,n),U(:,j,n))-F(U(:,j-1,n),U(:,j,n)));
 end
 
+figure(1)
+for t = 1:length(T)
+    plot(x,U(1,:,t));
+    xlabel("T = "+t);
+    ylabel("density");
+    pause(0.005);
+end
+figure(2)
+for t = 1:length(T)
+    plot(x,U(2,:,t));
+    xlabel("T = "+t);
+    ylabel("velocity");
+    pause(0.005);
+end
+figure(3)
+for t = 1:length(T)
+    plot(x,U(3,:,t));
+    xlabel("T = "+t);
+    ylabel("Pressure");
+    pause(0.005);
+end
+
+function F_LF = F_LF(uL,uR,lambda)
+    F_LF = 0.5*(A(uL)*uL + A(uR)*uR - (uR-uL)/lambda);
+end
 function FLF = F(uL,uR) %u[3x1]
     FLF = zeros(3,1);
     aL = min(eig(A(uL)),eig(A(uR)));

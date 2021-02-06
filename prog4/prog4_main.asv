@@ -38,8 +38,8 @@ for n = 1:size(U,3)-1 %iterate over time
     %calc first one
     U(:,1,n+1) = U(:,1,n)-dt/dx*(F(U(:,1,n),U(:,2,n))-F(U(:,1,n),U(:,1,n)));
     for j = 2:size(U,2)-1 %iterate over x
-        F_1 = F(U(:,j,n),U(:,j+1,n));
-        F_2 = F(U(:,j-1,n),U(:,j,n));
+        F_1 = F_LF(U(:,j,n),U(:,j+1,n),lambda);
+        F_2 = F_LF(U(:,j-1,n),U(:,j,n),lambda);
         U(:,j,n+1) = U(:,j,n)-dt/dx*(F_1-F_2);
     end
     %calc last one
@@ -47,6 +47,9 @@ for n = 1:size(U,3)-1 %iterate over time
     U(:,j,n+1) = U(:,j,n)-dt/dx*(F(U(:,j,n),U(:,j,n))-F(U(:,j-1,n),U(:,j,n)));
 end
 
+function F_LF = F_LF(uL,uR,lambda)
+    F_LF = 0.5*(A(uL)*uL + A(uR)*uR - (uR-uL)/lambda);
+end
 function FLF = F(uL,uR) %u[3x1]
     FLF = zeros(3,1);
     aL = min(eig(A(uL)),eig(A(uR)));
@@ -65,7 +68,7 @@ function Au = A(u)
     u1 = u(1);
     u2 = u(2);
     u3 = u(3);
-%     if (u1 == 0)
+%     if (u1 == 0) % case divide by 0
 %         Au = [0, 1, 0;
 %              (Cv-3)/2*(u2)^2, (3-Cv)*(u2/u1), Cv-1;
 %              -Cv*u2*u3+(Cv-1)*(u2/u1)^3, Cv*u3/u1-1.5*(Cv-1)*(u2/u1)^2, u2/u1*Cv];
@@ -78,7 +81,7 @@ end
 
 function flux = f(u) %u[3x1]
     Cv = 1.4;
-%     if u(1)==0 %di
+%     if u(1)==0 %case divide by 0
 %         flux = [u(2);
 %             u(3)*(Cv-1)+(3-Cv)/2*(u(2).^2);
 %             u(2).*u(3)*Cv-0.5*(Cv-1)*(u(3).^3)];
@@ -88,3 +91,8 @@ function flux = f(u) %u[3x1]
             u(2).*u(3)./u(1)*Cv-0.5*(Cv-1)*(u(3).^3)/(u(1).^2)];
 %     end
 end
+
+figure(1)
+for t = 1:length(T)
+    plot(x,U(1,:t))
+    xaxis('
