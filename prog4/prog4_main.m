@@ -1,7 +1,7 @@
-N = 100;
+N = 200;
 x_start = 0;
 x_end = 1;
-T_end = 0.25;
+T_end = 0.5;
 dx = (x_end-x_start)/N;
 cfl_a = 0.5;
 dt = cfl_a*dx; %/max(abs(eig(Aj))); %CFL condition
@@ -36,7 +36,7 @@ end
 
 for n = 1:size(U,3)-1 %iterate over time
     %calc first one
-    U(:,1,n+1) = U(:,1,n)-dt/dx*(F(U(:,1,n),U(:,2,n))-F(U(:,1,n),U(:,1,n)));
+    U(:,1,n+1) = U(:,1,n)-dt/dx*(F_LF(U(:,1,n),U(:,2,n),lambda)-F_LF(U(:,1,n),U(:,1,n),lambda));
     for j = 2:size(U,2)-1 %iterate over x
         F_1 = F_LF(U(:,j,n),U(:,j+1,n),lambda);
         F_2 = F_LF(U(:,j-1,n),U(:,j,n),lambda);
@@ -44,28 +44,24 @@ for n = 1:size(U,3)-1 %iterate over time
     end
     %calc last one
     j = size(U,2);
-    U(:,j,n+1) = U(:,j,n)-dt/dx*(F(U(:,j,n),U(:,j,n))-F(U(:,j-1,n),U(:,j,n)));
+    U(:,j,n+1) = U(:,j,n)-dt/dx*(F_LF(U(:,j,n),U(:,j,n),lambda)-F_LF(U(:,j-1,n),U(:,j,n),lambda));
 end
 
 figure(1)
 for t = 1:length(T)
+    tiledlayout(3,1);
+    nexttile
     plot(x,U(1,:,t));
     xlabel("T = "+t);
-    ylabel("density");
-    pause(0.005);
-end
-figure(2)
-for t = 1:length(T)
+    title("Density");
+    nexttile
     plot(x,U(2,:,t));
     xlabel("T = "+t);
-    ylabel("velocity");
-    pause(0.005);
-end
-figure(3)
-for t = 1:length(T)
+    title("Velocity");
+    nexttile
     plot(x,U(3,:,t));
     xlabel("T = "+t);
-    ylabel("Pressure");
+    title("Pressure");
     pause(0.005);
 end
 

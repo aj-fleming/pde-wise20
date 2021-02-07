@@ -47,6 +47,23 @@ for n = 1:size(U,3)-1 %iterate over time
     U(:,j,n+1) = U(:,j,n)-dt/dx*(F(U(:,j,n),U(:,j,n))-F(U(:,j-1,n),U(:,j,n)));
 end
 
+figure(1)
+for t = 1:length(T)
+    tiledlayout = (
+    plot(x,U(1,:,t));
+    xlabel("T = "+t);
+    ylabel("density");
+    
+    plot(x,U(2,:,t));
+    xlabel("T = "+t);
+    ylabel("velocity");
+    
+    plot(x,U(3,:,t));
+    xlabel("T = "+t);
+    ylabel("Pressure");
+    pause(0.005);
+end
+
 function F_LF = F_LF(uL,uR,lambda)
     F_LF = 0.5*(A(uL)*uL + A(uR)*uR - (uR-uL)/lambda);
 end
@@ -91,8 +108,3 @@ function flux = f(u) %u[3x1]
             u(2).*u(3)./u(1)*Cv-0.5*(Cv-1)*(u(3).^3)/(u(1).^2)];
 %     end
 end
-
-figure(1)
-for t = 1:length(T)
-    plot(x,U(1,:t))
-    xaxis('
