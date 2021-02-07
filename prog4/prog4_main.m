@@ -50,47 +50,21 @@ end
 
 figure(1)
 for t = 1:length(T)
-    tiledlayout(3,1);
-    nexttile
+    subplot(3, 1, 1)
     plot(x,U(1,:,t));
     xlabel("T = "+t);
     title("Density");
-    nexttile
+    subplot(3, 1, 2)
     plot(x,U(2,:,t));
     xlabel("T = "+t);
     title("Velocity");
-    nexttile
+    subplot(3, 1, 3)
     plot(x,U(3,:,t));
     xlabel("T = "+t);
     title("Pressure");
     pause(0.005);
 end
 
-function F_LF = F_LF(uL,uR,lambda)
-    F_LF = 0.5*(A(uL)*uL + A(uR)*uR - (uR-uL)/lambda);
-end
-function FLF = F(uL,uR) %u[3x1]
-    FLF = zeros(3,1);
-    aL = min(eig(A(uL)),eig(A(uR)));
-    aR = max(abs(eig(A(uL))),abs(eig(A(uR))));
-    if aL >= 0
-        FLF = f(uL);
-    elseif (aL <= 0) & (aR >= 0)
-        FLF = 1./(aR-aL).*(aR.*f(uL)-aL.*f(uR)+aL.*aR.*(uR-uL));
-    elseif aR >= 0
-        FLF = f(uR);
-    end
-end
 
-function flux = f(u) %u[3x1]
-    Cv = 1.4;
-%     if u(1)==0 %case divide by 0
-%         flux = [u(2);
-%             u(3)*(Cv-1)+(3-Cv)/2*(u(2).^2);
-%             u(2).*u(3)*Cv-0.5*(Cv-1)*(u(3).^3)];
-%     else
-        flux = [u(2);
-            u(3)*(Cv-1)+(3-Cv)/2*(u(2).^2)./u(1);
-            u(2).*u(3)./u(1)*Cv-0.5*(Cv-1)*(u(3).^3)/(u(1).^2)];
-%     end
-end
+
+
