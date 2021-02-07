@@ -1,7 +1,7 @@
-N = 100;
+N = 200;
 x_start = 0;
 x_end = 1;
-T_end = 0.25;
+T_end = 0.5;
 dx = (x_end-x_start)/N;
 cfl_a = 0.5;
 Cv = 1.4;
@@ -37,18 +37,60 @@ end
 
 for n = 1:size(U,3)-1 %iterate over time
     %calc first one
-    U(:,1,n+1) = U(:,1,n)-dt/dx*(F(U(:,1,n),U(:,2,n))-F(U(:,1,n),U(:,1,n)));
+    U(:,1,n+1) = U(:,1,n)-dt/dx*(F_LF(U(:,1,n),U(:,2,n),lambda)-F_LF(U(:,1,n),U(:,1,n),lambda));
     for j = 2:size(U,2)-1 %iterate over x
-        F_1 = F(U(:,j,n),U(:,j+1,n));
-        F_2 = F(U(:,j-1,n),U(:,j,n));
+        F_1 = F_LF(U(:,j,n),U(:,j+1,n),lambda);
+        F_2 = F_LF(U(:,j-1,n),U(:,j,n),lambda);
         U(:,j,n+1) = U(:,j,n)-dt/dx*(F_1-F_2);
     end
     %calc last one
     j = size(U,2);
-    U(:,j,n+1) = U(:,j,n)-dt/dx*(F(U(:,j,n),U(:,j,n))-F(U(:,j-1,n),U(:,j,n)));
+    U(:,j,n+1) = U(:,j,n)-dt/dx*(F_LF(U(:,j,n),U(:,j,n),lambda)-F_LF(U(:,j-1,n),U(:,j,n),lambda));
 end
 
+figure(1)
+for t = 1:length(T)
+    tiledlayout(3,1);
+    nexttile
+    plot(x,U(1,:,t));
+    xlabel("T = "+t);
+    title("Density");
+    nexttile
+    plot(x,U(2,:,t));
+    xlabel("T = "+t);
+    title("Velocity");
+    nexttile
+    plot(x,U(3,:,t));
+    xlabel("T = "+t);
+    title("Pressure");
+    pause(0.005);
+end
 
+function F_LF = F_LF(uL,uR,lambda)
+    F_LF = 0.5*(A(uL)*uL + A(uR)*uR - (uR-uL)/lambda);
+end
+function FLF = F(uL,uR) %u[3x1]
+    FLF = zeros(3,1);
+    aL = min(eig(A(uL)),eig(A(uR)));
+    aR = max(abs(eig(A(uL))),abs(eig(A(uR))));
+    if aL >= 0
+        FLF = f(uL);
+    elseif (aL <= 0) & (aR >= 0)
+        FLF = 1./(aR-aL).*(aR.*f(uL)-aL.*f(uR)+aL.*aR.*(uR-uL));
+    elseif aR >= 0
+        FLF = f(uR);
+    end
+end
 
-
-
+function flux = f(u) %u[3x1]
+    Cv = 1.4;
+%     if u(1)==0 %case divide by 0
+%         flux = [u(2);
+%             u(3)*(Cv-1)+(3-Cv)/2*(u(2).^2);
+%             u(2).*u(3)*Cv-0.5*(Cv-1)*(u(3).^3)];
+%     else
+        flux = [u(2);
+            u(3)*(Cv-1)+(3-Cv)/2*(u(2).^2)./u(1);
+            u(2).*u(3)./u(1)*Cv-0.5*(Cv-1)*(u(3).^3)/(u(1).^2)];
+%     end
+end
