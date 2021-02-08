@@ -1,9 +1,10 @@
-N = 50; %grid cells
+N = 200; %grid cells
 x_start = 0;
 x_end = 1;
-T_end = 0.25;
+T_end = 0.5;
 dx = (x_end-x_start)/N;
-cfl_a = 0.5;
+cfl_a = 0.75;
+Cv = 1.4;
 x = linspace(x_start,x_end,N);
 u0 = zeros(3,N); %rho,v,P
 IC = '2'; %initial condition
@@ -27,13 +28,19 @@ for i = 1:N
     U(3,i,1) =  integral(U0{3},x_start+(i-1)*dx, x_start+(i*dx))/dx;
 end
 
-time = 0; n = 0;
+time = 0; n = 1; T = [0];
 while(true) %iterate over time
-    %loop
-    dt = cfl_a*dx/max(abs(eig(Aj))); %CFL condition
-    if n+dt > T_end
+    eigs = zeros(1,N);
+    for i = 1:N
+        Ai = A(U(:,i,n));
+        eigs(i) = max(abs(eig(Ai)));
+    end
+    dt = cfl_a*dx/max(eigs); %CFL condition
+    time = time + dt;
+    if time > T_end
         break;
     end
+    T = [T time];
     lambda = dt/dx;
     %calc first one
     U(:,1,n+1) = U(:,1,n)-dt/dx*(F(U(:,1,n),U(:,2,n),lambda)-F(U(:,1,n),U(:,1,n),lambda));
@@ -46,22 +53,36 @@ while(true) %iterate over time
     %calc last one
     j = size(U,2);
     U(:,j,n+1) = U(:,j,n)-dt/dx*(F(U(:,j,n),U(:,j,n),lambda)-F(U(:,j-1,n),U(:,j,n),lambda));
+    n = n+1;
 end
-if T_end-time > 0
+dt = T_end-time;
+if dt > 0
     %calc last time step
+    T = [T T_end];
+    lambda = dt/dx;
+    U(:,1,n+1) = U(:,1,n)-dt/dx*(F(U(:,1,n),U(:,2,n),lambda)-F(U(:,1,n),U(:,1,n),lambda));
+    %calc 2 thru N-1
+    for j = 2:size(U,2)-1 %iterate over x
+        F_1 = F(U(:,j,n),U(:,j+1,n),lambda);
+        F_2 = F(U(:,j-1,n),U(:,j,n),lambda);
+        U(:,j,n+1) = U(:,j,n)-dt/dx*(F_1-F_2);
+    end
+    %calc last one
+    j = size(U,2);
+    U(:,j,n+1) = U(:,j,n)-dt/dx*(F(U(:,j,n),U(:,j,n),lambda)-F(U(:,j-1,n),U(:,j,n),lambda));
 end
 
 figure(1)
-set(gcf, [100 100 1000 600]);
+set(gcf,'position',[100 100 1000 600]);
 for t = 1:length(T)
     tiledlayout(3,1);
     nexttile
     plot(x,U(1,:,t));
-    xlabel("T = "+t);
+    xlabel("T = "+t*dt);
     title("Density");
     nexttile
     plot(x,U(2,:,t));
-    xlabel("T = "+t);
+    xlabel("T = "+t*dt);
     title("Velocity");
     nexttile
     plot(x,U(3,:,t));
