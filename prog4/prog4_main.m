@@ -1,9 +1,9 @@
-N = 200; %grid cells
+N = 50; %grid cells
 x_start = 0;
 x_end = 1;
 T_end = 0.5;
 dx = (x_end-x_start)/N;
-cfl_a = 0.75;
+cfl_a = 0.5;
 Cv = 1.4;
 x = linspace(x_start,x_end,N);
 u0 = zeros(3,N); %rho,v,P
@@ -36,23 +36,23 @@ while(true) %iterate over time
         eigs(i) = max(abs(eig(Ai)));
     end
     dt = cfl_a*dx/max(eigs); %CFL condition
-    time = time + dt;
     if time > T_end
         break;
     end
+    time = time + dt;
     T = [T time];
     lambda = dt/dx;
     %calc first one
-    U(:,1,n+1) = U(:,1,n)-dt/dx*(F(U(:,1,n),U(:,2,n),lambda)-F(U(:,1,n),U(:,1,n),lambda));
+    U(:,1,n+1) = U(:,1,n)-lambda*(F(U(:,1,n),U(:,2,n),lambda)-F(U(:,1,n),U(:,1,n),lambda));
     %calc 2 thru N-1
     for j = 2:size(U,2)-1 %iterate over x
         F_1 = F(U(:,j,n),U(:,j+1,n),lambda);
         F_2 = F(U(:,j-1,n),U(:,j,n),lambda);
-        U(:,j,n+1) = U(:,j,n)-dt/dx*(F_1-F_2);
+        U(:,j,n+1) = U(:,j,n)-lambda*(F_1-F_2);
     end
     %calc last one
     j = size(U,2);
-    U(:,j,n+1) = U(:,j,n)-dt/dx*(F(U(:,j,n),U(:,j,n),lambda)-F(U(:,j-1,n),U(:,j,n),lambda));
+    U(:,j,n+1) = U(:,j,n)-lambda*(F(U(:,j,n),U(:,j,n),lambda)-F(U(:,j-1,n),U(:,j,n),lambda));
     n = n+1;
 end
 dt = T_end-time;
@@ -114,12 +114,12 @@ function Au = A(u)
     u3 = u(3);
 %     if (u1 == 0) % case divide by 0
 %         Au = [0, 1, 0;
-%              (Cv-3)/2*(u2)^2, (3-Cv)*(u2/u1), Cv-1;
-%              -Cv*u2*u3+(Cv-1)*(u2/u1)^3, Cv*u3/u1-1.5*(Cv-1)*(u2/u1)^2, u2/u1*Cv];
+%              (Cv-3)/2*(u2)^2, (3-Cv)*(u2), Cv-1;
+%              -Cv*u2*u3+(Cv-1)*(u2)^3, Cv*u3-1.5*(Cv-1)*(u2)^2, u2*Cv];
 %     else
         Au = [0, 1, 0;
-             (Cv-3)/2*(u2/u1)^2, (3-Cv)*(u2), Cv-1;
-             -Cv*u2*u3/u1^2+(Cv-1)*(u2)^3, Cv*u3/u1-1.5*(Cv-1)*(u2)^2, u2*Cv];
+             (Cv-3)/2*(u2/u1)^2, (3-Cv)*(u2/u1), Cv-1;
+             -Cv*u2*u3/(u1^2)+(Cv-1)*(u2/u1)^3, Cv*u3/u1-1.5*(Cv-1)*(u2/u1)^2, u2/u1*Cv];
 %     end
 end
 
@@ -132,6 +132,6 @@ function flux = f(u) %u[3x1]
 %     else
         flux = [u(2);
             u(3)*(Cv-1)+(3-Cv)/2*(u(2).^2)./u(1);
-            u(2).*u(3)./u(1)*Cv-0.5*(Cv-1)*(u(3).^3)/(u(1).^2)];
+            u(2)*u(3)/u(1)*Cv-0.5*(Cv-1)*(u(3).^3)/(u(1).^2)];
 %     end
 end
