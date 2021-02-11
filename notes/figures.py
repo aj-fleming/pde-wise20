@@ -7,7 +7,7 @@ from scipy.integrate import quad
 from IPython.display import HTML, Image
 
 #change the color/style parameters to your liking
-rc("figure",figsize=(4,4))
+rc("figure",figsize=(6,6))
 sqrt2pi = np.sqrt(2*np.pi)
 def unot(x):
     return np.exp(-0.5*np.power(2*x,2)/sqrt2pi)
@@ -35,9 +35,3 @@ def simple_characteristic_figure(speed=0.5):
         ax.plot(x, 1/speed * (x-xnot), color=cm.tab10.colors[0])
         xnot += 0.5
     return fig, ax
-
-if __name__=="__main__":
-    fig, ax = simple_advection_figure()
-    fig.savefig("simple_advection_figure.png")
-    fig, ax = simple_characteristic_figure()
-    fig.savefig("simple_characteristic_figure.png")
