@@ -3,7 +3,7 @@ x_start = 0;
 x_end = 1;
 T_end = 0.5;
 dx = (x_end-x_start)/N;
-cfl_a = 0.75;
+cfl_a = 1.1;
 Cv = 1.4;
 x = linspace(x_start,x_end,N);
 u0 = zeros(3,N); %rho,v,P
@@ -73,7 +73,7 @@ for t = 1:length(T)
     %ylim([0,1.5]);
     xlabel("T = "+T(t));
     title("Pressure");
-    pause(0.0005);
+    pause(0.0001);
 end
 
 function e = fast_eigs(u, heat_ratio)
